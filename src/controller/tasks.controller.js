@@ -1,58 +1,34 @@
+import { TasksRepository } from "../repositories/tasks.repository.js";
+
 export class TasksController {
     constructor() {
-        this.tasks = [
-            {
-                id: 1,
-                checked: false,
-                name: "teste 1",
-            },
-            {
-                id: 2,
-                checked: false,
-                name: "teste 2",
-            },
-            {
-                id: 3,
-                checked: false,
-                name: "teste 3",
-            },
-        ];
-
-        this.lastId = 3;
-
-        this.getAllTasks = this.getAllTasks.bind(this);
-        this.addTasks = this.addTasks.bind(this);
-        this.deleteTasks = this.deleteTasks.bind(this);
-        this.updateTask = this.updateTask.bind(this);
+        this.repository = new TasksRepository();
     }
 
-    getAllTasks(req, res) {
-        return res.send(this.tasks);
+    getAllTasks = async (req, res) => {
+        const allTasks = await this.repository.getTasks();
+        return res.json(allTasks);
     }
 
-    addTasks(req, res) {
+    addTasks = async (req, res) => {
         const task = req.body;
-        this.lastId++;
-        task.id = this.lastId;
-        this.tasks.push(task);
+        const newTask = await this.repository.createTask(task)
 
-        return res.json(task);
+        return res.json(newTask);
     }
 
-    deleteTasks(req, res) {
+    deleteTasks = async (req, res) => {
         const id = Number(req.params.id);
-        this.tasks = this.tasks.filter(task => task.id != id);
+        await this.repository.deleteTask(id)
+
         return res.json({ ok: "true" });
     }
 
-    updateTask(req, res) {
+    updateTask = async (req, res) => {
         const id = Number(req.params.id);
         const task = req.body;
+        const newTask = await this.repository.updateTask({ id, ...task })
 
-        const newTask = this.tasks.find(element => element.id === id);
-        newTask.name = task.name ? task.name : newTask.name;
-        newTask.checked = typeof task.checked === 'boolean' ? task.checked : newTask.checked;
-        
         return res.json(newTask);
     }
 }
